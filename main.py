@@ -1,13 +1,7 @@
 import pygame
 import numpy as np
 
-colors = [
-    "#000000", "#BA0900", "#6B7900", "#00C2A0", "#FFAA92", "#FF90C9", "#B903AA", "#D16100",
-    "#DDEFFF", "#000035", "#7B4F4B", "#A1C299", "#300018", "#0AA6D8", "#013349", "#00846F",
-    "#372101", "#FFB500", "#C2FFED", "#A079BF", "#CC0744", "#C0B9B2", "#C2FF99", "#001E09",
-    "#00489C", "#6F0062", "#0CBD66", "#EEC3FF", "#456D75", "#B77B68", "#7A87A1", "#788D66",
-    "#885578", "#FAD09F", "#FF8A9A", "#D157A0", "#BEC459", "#456648", "#0086ED", "#886F4C"
-]
+colors = ["#5a3036", "#eac93c", "#f08077", "#637dac", "#5c8910", "#724ea2", "#b6e2ad", "#bce9f1"]
 
 
 def dist(pnt1, pnt2):
@@ -25,12 +19,9 @@ def is_closest(pnt1, pnt2, points, flags, eps):
 def group_neighbors(pnt1, points, groups, flags, eps, g):
     for i, pnt2 in enumerate(points):
         if groups[i] == 0 and dist(pnt1, pnt2) < eps:
-            if flags[i] == 'g':
-                groups[i] = g
+            groups[i] = g
+            if flags[i] != 'y':
                 group_neighbors(pnt2, points, groups, flags, eps, g)
-            elif flags[i] == 'y':
-                if is_closest(pnt1, pnt2, points, flags, eps):
-                    groups[i] = g
 
 
 def dbscan(points):
@@ -86,17 +77,12 @@ def colorized(screen, points, flags):
     pygame.display.update()
 
 
-def default(screen, points):
-    screen.fill("white")
-    for pnt in points:
-        pygame.draw.circle(screen, color='black', center=pnt, radius=10)
-    pygame.display.update()
-
-
 def paint(screen):
     points = []
 
     painting = True
+    flags = []
+    groups = []
 
     while painting:
         for event in pygame.event.get():
@@ -108,8 +94,13 @@ def paint(screen):
                     pygame.display.update()
 
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN:
-                    return points
+                print(event.key)
+                if event.key == pygame.K_1:
+                    flags, groups = dbscan(points)
+                    colorized(screen, points, flags)
+                if event.key == pygame.K_2:
+                    flags, groups = dbscan(points)
+                    grouped(screen, points, groups)
 
             if event.type == pygame.QUIT:
                 painting = False
@@ -125,21 +116,6 @@ def start():
 
     pygame.display.update()
     points = paint(screen)
-
-    flags, groups = dbscan(points)
-
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN:
-                print(event.key)
-                if event.key == pygame.K_1:
-                    default(screen, points)
-                if event.key == pygame.K_2:
-                    colorized(screen, points, flags)
-                if event.key == pygame.K_3:
-                    grouped(screen, points, groups)
-            if event.type == pygame.QUIT:
-                running = False
 
 
 if __name__ == '__main__':
